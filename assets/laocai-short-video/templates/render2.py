@@ -1,4 +1,5 @@
 """第 2 步：逐帧渲染动态字幕、角标、动画层（RGBA），管道送给 ffmpeg 叠加到 base.mp4。"""
+import os
 import json
 import math
 import subprocess
@@ -14,9 +15,9 @@ SUBS = []
 EDL = []
 
 HERE = Path(__file__).parent
-FONT_BOLD = str(Path.home() / "Library/Fonts/AlimamaShuHeiTi-Bold.ttf")
-FONT_BLACK = str(Path.home() / "Library/Fonts/HARMONYOS_SANS_SC_BLACK.TTF")
-FONT_MED = str(Path.home() / "Library/Fonts/HARMONYOS_SANS_SC_MEDIUM.TTF")
+FONT_BOLD = os.environ["VIDEO_FONT_BOLD"]
+FONT_BLACK = os.environ["VIDEO_FONT_BLACK"]
+FONT_MED = os.environ["VIDEO_FONT_MED"]
 CYAN = (0, 229, 255)
 YELLOW = (255, 226, 0)
 WHITE = (255, 255, 255)

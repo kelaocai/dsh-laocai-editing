@@ -3,7 +3,7 @@
 set -euo pipefail
 unset HTTP_PROXY HTTPS_PROXY ALL_PROXY http_proxy https_proxy all_proxy
 V="$1"; M="$HOME/models/Qwen3-ForcedAligner-0.6B"; PIP="-i https://mirrors.aliyun.com/pypi/simple/ --proxy="
-/opt/homebrew/bin/python3.12 -m venv "$V"
+"${PYTHON_BIN:-python3.12}" -m venv "$V"
 "$V/bin/pip" install -q $PIP --upgrade pip numpy
 "$V/bin/pip" install -q $PIP torch torchaudio "transformers==4.57.6" "accelerate==1.12.0" librosa soundfile qwen-omni-utils pytz
 # qwen-asr 的 nagisa（日语分词）在 3.12 上编译失败，中文用不到：免依赖安装 + 空壳模块

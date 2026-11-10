@@ -54,13 +54,26 @@ description: 老财（老财科技观察）个人短视频后期成片流程：�
 
 ## 环境
 
+### 路径由执行环境提供
+
+不在技能正文、参考和模板中记录个人目录。技能根目录从当前 SKILL.md 解析；复制模板到当前项目后再配置和运行。
+
+- `VIDEO_PROJECT_DIR`：本次素材与工程根目录，项目模板必填；不默认读取历史项目。
+- `MEETING_ASR_BACKEND`：可选外部 ASR 后端目录；仅运行阿里云适配脚本时必填。缺少后端则选用已安装的其他转写方案。
+- `VIDEO_FONT_BOLD`、`VIDEO_FONT_BLACK`、`VIDEO_FONT_MED`：渲染所用字体文件路径，由当前环境提供。
+- `VIDEO_TOOLS_DIR`：可选视觉辅助工具目录，`$TOOLS` 由该变量解析；缺失时使用当前可用工具。
+- `PYTHON_BIN`：安装对齐环境时可指定 Python 解释器，默认从 PATH 查找 python3.12。
+
+变量值属于本机或项目配置，不写回技能库、不打进导出包。系统通用缓存目录与模型默认目录可保留，但运行前核实依赖实际存在。
+
+
 - 维护这份技能或同步到另一工具时读 [共享维护约定](references/shared-maintenance.md)。修改真实源目录，运行仓库检查；本机两端随即读取同一文件，GitHub 用于版本与跨机器同步。
-- `$TOOLS` 表示实际存在的本机视觉辅助工具目录：优先检查 `<外部视觉工具目录（本包不含）>` 和 `<外部视觉工具目录（本包不含）>` 中的 `vlook.py`、`shotcat.py`。缺失时用当前可用工具完成对应检查，不能假装调用成功。这些本机工具与密钥环境不随本技能仓库分发。
+- `$TOOLS` 表示实际存在的本机视觉辅助工具目录：通过 `VIDEO_TOOLS_DIR` 配置，检查其中的 `vlook.py`、`shotcat.py`。缺失时用当前可用工具完成对应检查，不能假装调用成功。这些本机工具与密钥环境不随本技能仓库分发。
 
 - ffmpeg（Homebrew 版**没有 drawtext**，不能用 ffmpeg 写字，所有文字和动画用 Pillow 画）。
 - Python 虚拟环境装 `pillow numpy`：`python3 -m venv venv && venv/bin/pip install -i https://mirrors.aliyun.com/pypi/simple/ --proxy "" pillow numpy`（不走代理）。
-- 本地 whisper 优先复用已安装的 `video-material-brief/scripts/.venv`：检查当前可用技能的真实位置，必要时在 `<宿主机技能发现目录>`、`<宿主机技能发现目录>`、`<宿主机技能发现目录>` 查找；不可把不存在的 Codex 路径当作依赖已安装。命令示例中的 `$BRIEF` 表示已确认的 video-material-brief 根目录。
-- 字体在 `<系统字体目录>/`：可用字体包括 `AlimamaShuHeiTi-Bold.ttf`、`HARMONYOS_SANS_SC_BLACK.TTF`、`HARMONYOS_SANS_SC_MEDIUM.TTF`、小米 `MiSans-Semibold.ttf` / `MiSans-Bold.ttf` / `MiSans-Regular.ttf`（多字重齐全）；具体选字与字重按本条风格决定。
+- 本地 whisper 优先复用已安装的 `video-material-brief/scripts/.venv`：检查当前可用技能的真实位置，必要时在 `~/.agents/skills`、`~/.claude/skills`、`~/.codex/skills` 查找；不可把不存在的 Codex 路径当作依赖已安装。命令示例中的 `$BRIEF` 表示已确认的 video-material-brief 根目录。
+- 字体在 `~/Library/Fonts/`：可用字体包括 `AlimamaShuHeiTi-Bold.ttf`、`HARMONYOS_SANS_SC_BLACK.TTF`、`HARMONYOS_SANS_SC_MEDIUM.TTF`、小米 `MiSans-Semibold.ttf` / `MiSans-Bold.ttf` / `MiSans-Regular.ttf`（多字重齐全）；具体选字与字重按本条风格决定。
 
 ## 流程
 
@@ -72,7 +85,7 @@ description: 老财（老财科技观察）个人短视频后期成片流程：�
 
 ```bash
 # 阿里云：文字最准，但长音频只给大段、没有逐字时间（在 meeting-asr 后端环境下运行）
-cd <meeting-asr 后端目录> && .venv/bin/python <工作目录>/asr_raw.py <口播.mp3> host_asr.json
+"$MEETING_ASR_BACKEND/.venv/bin/python" <工作目录>/asr_raw.py <口播.mp3> host_asr.json
 # 本地 whisper：给出自然分句，方便切字幕（不联网）
 env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy HF_HUB_OFFLINE=1 \
   $BRIEF/scripts/.venv/bin/python <工作目录>/words.py <口播.mp3> words.json "专有名词提示"
@@ -85,7 +98,7 @@ env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u al
 **1b. 强制对齐到字（Qwen3-ForcedAligner-0.6B，本地，115 秒口播约 15 秒）**
 
 ```bash
-bash $T/setup_aligner.sh <工作目录>/qa          # 首次：建环境 + 下模型到 <本地模型目录>/（国内源）
+bash $T/setup_aligner.sh <工作目录>/qa          # 首次：建环境 + 下模型到 ~/models/（国内源）
 python3 -c "from edl import SUBS; print(''.join(t.replace('，','').replace('？','').replace('、','') for _,_,t,_ in SUBS))" > script.txt
 <工作目录>/qa/bin/python align.py <口播.mp3> script.txt aligned.json   # 每个汉字/英文词的起止时间
 python3 subs_from_align.py aligned.json                                # → subs_aligned.json

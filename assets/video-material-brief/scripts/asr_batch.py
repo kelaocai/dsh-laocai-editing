@@ -1,12 +1,19 @@
 """批量转写土豆巴士素材音频：复用 meeting-asr 的上传与转写函数，不做归档。"""
+import os
 import asyncio
 import sys
 from pathlib import Path
 
-sys.path.insert(0, "<meeting-asr 后端目录>")
+backend_value = os.environ.get("MEETING_ASR_BACKEND")
+if not backend_value:
+    raise SystemExit("请设置 MEETING_ASR_BACKEND，指向已安装的 ASR 后端目录")
+backend = Path(backend_value).expanduser().resolve()
+if not (backend / "app").is_dir():
+    raise SystemExit("MEETING_ASR_BACKEND 缺少 app 目录，请检查后端安装")
+sys.path.insert(0, str(backend))
 from dotenv import load_dotenv  # noqa: E402
 
-load_dotenv("<meeting-asr 后端目录>/.env")
+load_dotenv(backend / ".env")
 from app import pipeline  # noqa: E402
 
 

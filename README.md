@@ -63,14 +63,24 @@ npm 包地址：<https://www.npmjs.com/package/dsh-laocai-editing>
 ## 依赖与限制
 
 - 基础：FFmpeg、ffprobe、Python、Pillow、NumPy；具体 FFmpeg 滤镜能力现场检查。
-- 本地 ASR：faster-whisper 及本地模型；或本机 meeting-asr 后端（阿里云转写，依赖已有后端与账号环境，本包不含）。
-- 逐字对齐：torch、torchaudio、qwen-asr、transformers，对齐模型约 1.8GB（默认读取本地模型目录）；国内镜像/ModelScope 优先，禁止走计费代理。
-- 字体文件未随包分发，需检查本机已安装字体并调整 `render.py` 的字体路径。
+- 本地 ASR：faster-whisper 及本地模型；或 `MEETING_ASR_BACKEND` 指定的可选阿里云转写后端（依赖已有后端与账号环境，本包不含）。
+- 逐字对齐：torch、torchaudio、qwen-asr、transformers，对齐模型约 1.8GB（默认读取本地模型目录 `~/models/`）；国内镜像/ModelScope 优先，禁止走计费代理。
+- 字体文件未随包分发，由 `VIDEO_FONT_BOLD` / `VIDEO_FONT_BLACK` / `VIDEO_FONT_MED` 指定实际字体路径。
 - 烧录字幕是视频像素，需要 SRT 或 FCP 原生文字编辑时另做对应导出。
 
-## 占位符与隐私
+## 路径配置
 
-技能正文里的本机绝对路径与示例素材路径，打包时已替换为 `<...>` 占位符（`<项目素材目录>`、`<meeting-asr 后端目录>`、`<本技能资源目录>`、`<系统字体目录>`、`<本地模型目录>`、`<外部视觉工具…（本包不含）>` 等）。使用时按实际环境填写，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+技能正文不记录个人绝对路径，本机/项目相关路径由执行环境通过环境变量提供（不写回技能源）：
+
+| 配置 | 用途 |
+|---|---|
+| `VIDEO_PROJECT_DIR` | 当前工程与素材根目录；项目模板必填 |
+| `MEETING_ASR_BACKEND` | 可选 ASR 后端目录；仅使用该适配器时必填 |
+| `VIDEO_FONT_BOLD` / `VIDEO_FONT_BLACK` / `VIDEO_FONT_MED` | 三种字体角色的实际文件路径 |
+| `VIDEO_TOOLS_DIR` | 可选视觉辅助工具目录（`$TOOLS`） |
+| `PYTHON_BIN` | 对齐安装脚本使用的解释器；默认从 PATH 查找 python3.12 |
+
+技能内的相对资源由 DSH 注入的 `<skill_resources>` 资源目录解析，无需配置任何本机绝对路径。详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 ## 许可
 

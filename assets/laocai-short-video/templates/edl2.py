@@ -4,7 +4,9 @@ SUBS2：(屏幕显示文字, 实际读法或 None, 关键词)。读法只在和�
 EDL2：每个镜头用"口播里的一句话"做锚点，开始时间由强制对齐自动算出，不手填秒数。
 """
 
-ROOT = "<项目素材目录>"
+import os
+
+ROOT = os.environ["VIDEO_PROJECT_DIR"]
 HOST = f"{ROOT}/土豆巴士-第二版.mp4"
 VOICE = f"{ROOT}/土豆巴士-第二版.mp3"
 ANIM = f"{ROOT}/动画素材"

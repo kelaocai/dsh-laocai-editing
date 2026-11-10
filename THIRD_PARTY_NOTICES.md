@@ -18,6 +18,17 @@
 - `dialogue-short-film-editing`（剧情对白短片剪辑）
 - `video-material-brief`（视频素材梳理）
 
-## 占位符说明
+## 路径便携性
 
-技能正文中的本机绝对路径与示例素材路径，在打包时已替换为 `<...>` 形式的占位符（如 `<项目素材目录>`、`<meeting-asr 后端目录>`、`<本技能资源目录>`、`<系统字体目录>`、`<本地模型目录>`、`<外部视觉工具…（本包不含）>` 等）。这些占位符须在使用时按实际环境填写；本插件的随包技能资源通过 DSH 注入的 `<skill_resources>` 资源目录解析相对引用，不依赖任何本机绝对路径。
+技能正文、模板与参考均不记录个人绝对路径。本机/项目相关路径由执行环境通过环境变量提供，不写回技能源：
+
+| 配置 | 用途 |
+|---|---|
+| `VIDEO_PROJECT_DIR` | 当前工程与素材根目录；项目模板必填 |
+| `MEETING_ASR_BACKEND` | 可选 ASR 后端目录；仅使用该适配器时必填 |
+| `VIDEO_FONT_BOLD` / `VIDEO_FONT_BLACK` / `VIDEO_FONT_MED` | 三种字体角色的实际文件路径 |
+| `VIDEO_TOOLS_DIR` | 可选视觉辅助工具目录（`$TOOLS`） |
+| `PYTHON_BIN` | 对齐安装脚本使用的解释器；默认从 PATH 查找 python3.12 |
+| `--config` | 分镜示例生成图片服务配置；实际生成时必须指定 |
+
+技能内的相对资源（`references/`、`templates/`、`scripts/`）由 DSH 注入的 `<skill_resources>` 资源目录解析；正文中出现的 `~/models/`（对齐模型缓存）、`~/Library/Fonts/`（系统字体目录）、`~/.env` / `~/.profile` / `~/.bashrc`（通用 shell 配置）等为系统通用目录，不含个人标识。

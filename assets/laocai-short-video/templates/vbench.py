@@ -2,20 +2,19 @@
 
 python3 bench.py qwen3.8-flash qwen3.8-27b ...   → 打印每个模型的正确率、漏检/误报、token、耗时，明细写 bench_<模型>.json
 """
+import os
 import json
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-for tool_root in [Path.home() / ".codex/tools", Path.home() / ".claude/tools"]:
-    if (tool_root / "vlook.py").is_file():
-        sys.path.insert(0, str(tool_root))
-        break
-else:
-    raise FileNotFoundError("未找到本机 vlook.py；先安装视觉辅助工具，技能仓库不包含密钥环境")
+tool_value = os.environ.get("VIDEO_TOOLS_DIR")
+if not tool_value or not (Path(tool_value).expanduser() / "vlook.py").is_file():
+    raise SystemExit("请设置 VIDEO_TOOLS_DIR，指向含 vlook.py 的辅助工具目录")
+sys.path.insert(0, str(Path(tool_value).expanduser().resolve()))
 from vlook import ask  # noqa: E402
 
-R = "<项目素材目录>"
+R = os.environ["VIDEO_PROJECT_DIR"]
 SW = f"{R}/瑞士 人声放大.mp4"
 AP = f"{R}/美联社报道.mov"
 AWS = f"{R}/Robobus海外运营案例/AWS采访视频（英文版）.mp4"

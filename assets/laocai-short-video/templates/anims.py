@@ -6,6 +6,7 @@
   python anims.py --preview a13   每个动画出 4 张静帧拼图，检查用
 时长是按分镜的默认值，拿到新口播后可在 SPECS 里改。
 """
+import os
 import math
 import re
 from functools import lru_cache
@@ -20,7 +21,7 @@ from render import (CYAN, FONT_BLACK, FONT_BOLD, FONT_MED, RED, WHITE, YELLOW,
                     ease_back, ease_out, font, glow_layer, lerp)
 
 W, H, FPS = 1080, 1920, 30
-ROOT = Path("<项目素材目录>")
+ROOT = Path(os.environ["VIDEO_PROJECT_DIR"])
 OUT = ROOT / "动画素材"
 FRAMES = Path(__file__).parent / "anim_frames"   # 1-3 标题墙用到的素材截图
 GREY = (150, 165, 190)

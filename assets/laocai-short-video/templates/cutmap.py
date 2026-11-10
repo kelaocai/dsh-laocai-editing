@@ -2,13 +2,14 @@
 
 python cutmap.py → host3.mp4（画面+人声）、aligned2.json（时间已映射）、hostcuts.json（主播画面上的跳切点）、cutmap.json
 """
+import os
 import json
 import re
 import subprocess
 from pathlib import Path
 
 HERE = Path(__file__).parent
-ROOT = "<项目素材目录>"
+ROOT = os.environ["VIDEO_PROJECT_DIR"]
 SRC = f"{ROOT}/土豆巴士-第二版.mp4"
 FPS = 30
 MIN_PAUSE, KEEP = 0.45, 0.30  # 超过 0.45 秒的停顿压到 0.30 秒

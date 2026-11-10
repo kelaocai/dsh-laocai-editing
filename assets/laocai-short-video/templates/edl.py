@@ -3,7 +3,9 @@
 新项目复制到工作目录后，改 ROOT / HOST / TOTAL / SRC / EDL / SUBS 即可。时间单位秒，以主播口播音频为准。
 """
 
-ROOT = "<项目素材目录>"
+import os
+
+ROOT = os.environ["VIDEO_PROJECT_DIR"]
 HOST = f"{ROOT}/土豆巴士.mp4"
 FPS = 30
 W, H = 1080, 1920

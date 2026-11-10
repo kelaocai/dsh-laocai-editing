@@ -12,9 +12,11 @@ description: 把一个文件夹里的视频、照片、文案素材，梳理成�
 
 所有中间产物放在素材目录下的 `_preview/`、`_audio/`、`_transcripts/` 里，原素材一律不改名、不移动、不删除。
 
-脚本目录：`<本技能资源目录>/scripts/`（下文简写为 `$S`）
+脚本目录：当前技能根目录下的 `scripts/`（下文简写为 `$S`）
 
 ---
+
+路径由执行环境提供：`MEETING_ASR_BACKEND` 指定可选 ASR 后端，`VIDEO_TOOLS_DIR` 指定可选视觉工具目录（下称 `$TOOLS`）。不把用户目录或历史项目路径写进技能。使用外部脚本前确认依赖存在；图片生成配置通过 `--config` 显式指定。
 
 ## 第 1 步：盘点与读文案
 
@@ -36,10 +38,10 @@ bash $S/preview.sh "<素材目录>"          # 输出到 <素材目录>/_preview
 **先建镜头目录，让千问代看**（Claude 只读文字）：
 
 ```bash
-python3 <外部视觉工具 shotcat.py（本包不含）> "<素材目录>" -o "<素材目录>/_preview/shots_catalog.json"
+python3 "$TOOLS/shotcat.py" "<素材目录>" -o "<素材目录>/_preview/shots_catalog.json"
 ```
 
-场景检测把每段视频切成镜头，每个镜头取中间一帧交给千问（默认 `qwen3.8-flash`）写一句中文描述和关键词，连同镜头起止时间存进 JSON。读这个 JSON 就能知道每段素材拍了什么、每个镜头在哪一秒，写分镜时直接引用。照片同样可以问：`python3 <外部视觉工具 vlook.py（本包不含）> <照片> -q "..."`。看图分工、准确率和注意事项见 laocai-short-video 的"看图分工"一节；要点是千问看内容和文字很准，但判断不了"两帧是不是同一个镜头"。
+场景检测把每段视频切成镜头，每个镜头取中间一帧交给千问（默认 `qwen3.8-flash`）写一句中文描述和关键词，连同镜头起止时间存进 JSON。读这个 JSON 就能知道每段素材拍了什么、每个镜头在哪一秒，写分镜时直接引用。照片同样可以问：`python3 "$TOOLS/vlook.py" <照片> -q "..."`。看图分工、准确率和注意事项见 laocai-short-video 的"看图分工"一节；要点是千问看内容和文字很准，但判断不了"两帧是不是同一个镜头"。
 
 拼图还要不要读：
 - 目录描述足够写脚本时，不读拼图。
@@ -87,11 +89,11 @@ bash $S/voice_check.sh "<素材目录>/_audio"
 
 ### 3.3 阿里云转写（只送"有人声"和"存疑"）
 
-复用 `<meeting-asr 后端目录>` 后端里的 `upload_to_oss`、`submit_transcription`、`poll_transcription`、`format_transcript` 这几个函数。不要调用它的完整流程，因为完整流程会把源文件重命名并归档进 Obsidian。
+复用 已配置的 ASR 后端里的 `upload_to_oss`、`submit_transcription`、`poll_transcription`、`format_transcript` 这几个函数。不要调用它的完整流程，因为完整流程会把源文件重命名并归档进 Obsidian。
 
 ```bash
 mkdir -p "<素材目录>/_audio_send" && cp <要送的 mp3> "<素材目录>/_audio_send/"
-cd <meeting-asr 后端目录> && .venv/bin/python $S/asr_batch.py "<素材目录>/_audio_send" "<素材目录>/_transcripts"
+"$MEETING_ASR_BACKEND/.venv/bin/python" $S/asr_batch.py "<素材目录>/_audio_send" "<素材目录>/_transcripts"
 ```
 
 返回 `SUCCESS_WITH_NO_VALID_FRAGMENT` 表示没有识别到人声，属于正常情况，不算报错。
@@ -149,9 +151,9 @@ cd <meeting-asr 后端目录> && .venv/bin/python $S/asr_batch.py "<素材目录
 
 用户要"生成分镜草图放进文档"时，不等分镜师，直接调用图像接口出草图。范例脚本：`$S/gen_storyboard_example.py`。复制到项目目录后，改常量 `SCRIPT_MD`、`REF_IMAGE`、`DOC_ID` 和 `STYLE` 再用。
 
-**接口（沿用 `<其他项目 poster.py>` 和 `<其他项目目录>` 的图片编辑协议）**
+**接口（兼容的图片编辑协议）**
 
-- 配置文件：`<其他项目 openai.json>`，字段有 `base_url`（中转站 open.xiaojingai.com）、`api_key`、`model`、`quality`、`billing`。读配置时不打印密钥。
+- 配置文件：运行时通过 `--config` 指定的 JSON 文件，字段有 `base_url`（中转站 open.xiaojingai.com）、`api_key`、`model`、`quality`、`billing`。读配置时不打印密钥。
 - 请求：`POST {base_url}/v1/images/edits`，multipart 格式。字段为 `model / prompt / n=1 / size / quality=high / output_format=png`，参考图放在 `image` 字段，不发送 `input_fidelity`。
 - 返回：读 `data[0].b64_json`，没有时下载 `data[0].url`。
 - 模型名用配置里的 `model`（当前是 `gpt-image-2-reverse`）。配置里的 `model_ratio: 2.5` 是计费倍率，不是模型版本，不要当成"GPT Image 2.5"。用户点名要别的型号时，问清确切的模型名，再用 `--model` 传入。
@@ -163,7 +165,7 @@ cd <meeting-asr 后端目录> && .venv/bin/python $S/asr_batch.py "<素材目录
 **提示词要点**
 
 - **参考图用产品图**：从宣传页裁出产品图作为 `image`，画出来的产品外形才准。如果有外形相近的旧款（例如录音卡和录音豆），要在提示词里写明两者的区别，否则会画混。
-- **风格沿用土豆巴士已认可的写法**（`<素材下载目录>/土豆巴士/分镜/坐姿版_生成提示词.txt`）：黑白灰火柴人、白底黑线少量灰；两行四列 8 格；每格画虚线 9:16 安全框；底部信息带写"镜号 / 景别 / 时长"；坐姿主播的硬性约束（桌沿或椅背可见，无腿、无站姿，手势不高于肩）。
+- **风格沿用土豆巴士已认可的写法**（参考由当前项目提供，不依赖历史项目文件）：黑白灰火柴人、白底黑线少量灰；两行四列 8 格；每格画虚线 9:16 安全框；底部信息带写"镜号 / 景别 / 时长"；坐姿主播的硬性约束（桌沿或椅背可见，无腿、无站姿，手势不高于肩）。
 - **主播不画具体相貌**：只写"主播用火柴人表示"。不要自己编性别、眼镜这类外貌特征。
 - **剪辑术语会被原样画进图里**："金句卡""数据卡""大字"这类前缀，要先从字幕列里剥掉，并在提示词里写明这些词不要出现在画面上。素材代号（M5、R6）也有被画出来的风险。
 - **最后一板不满 8 格时**，要写明"剩余格完全留空，只画浅灰斜线，底部不写镜号"，否则模型会编出 7-3、7-4 这类不存在的镜号。

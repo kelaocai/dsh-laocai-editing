@@ -3,9 +3,9 @@
 调用 GPT Image（/v1/images/edits，参考图为录音豆产品图）生成黑白火柴人分镜草图，
 可选追加到飞书文档末尾。
 
-调用方式沿用 <其他项目目录> 与 <其他项目目录> 的 GPT Image 图片编辑协议：
+调用方式沿用 兼容的 GPT Image 图片编辑协议：
 multipart，字段 model / prompt / n=1 / size / quality=high / output_format=png，原图字段 image。
-密钥读取 <其他项目 openai.json>（或 --config 指定），不打印密钥。
+配置通过 --config 显式指定，不打印密钥。
 
 用法：
   python3 gen_storyboard.py --dry-run            # 只打印每张板的提示词
@@ -28,7 +28,6 @@ ROOT = Path(__file__).resolve().parent
 SCRIPT_MD = ROOT / "录音豆_逐字稿与分镜稿_合并版.md"
 REF_IMAGE = ROOT / "分镜草图" / "参考_录音豆.png"
 OUT_DIR = ROOT / "分镜草图"
-DEFAULT_CONFIG = Path.home() / "code/huxiao/config/openai.json"
 DOC_ID = "MPgudl8FToZzp0xHTLucg5iTnlf"
 PER_BOARD = 8
 SIZE = "1536x1024"
@@ -159,7 +158,7 @@ def parse_range(s, n):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--boards", help="如 1 或 1-3 或 2,5")
-    ap.add_argument("--config", default=str(DEFAULT_CONFIG))
+    ap.add_argument("--config", help="图片服务配置文件路径；实际生成时必填")
     ap.add_argument("--model", help="默认取配置里的 model")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true", help="覆盖已存在的板")
@@ -175,6 +174,8 @@ def main():
         upload(boards, groups)
         return
 
+    if not args.dry_run and not args.config:
+        ap.error("实际生成必须通过 --config 指定配置文件")
     cfg = None if args.dry_run else load_cfg(args.config)
     for b in boards:
         prompt = board_prompt(b, groups[b - 1])
