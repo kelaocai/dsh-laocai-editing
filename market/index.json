@@ -1,0 +1,81 @@
+{
+  "format": 1,
+  "title": {
+    "en": "kelaocai DSH plugins",
+    "zh": "kelaocai 的 DSH 插件"
+  },
+  "description": {
+    "en": "Market index for kelaocai's DeepSeek Harness plugins.",
+    "zh": "kelaocai 的 DeepSeek Harness 插件索引。"
+  },
+  "metadata": {
+    "categories": {
+      "media": {
+        "title": {
+          "en": "Video & media",
+          "zh": "视频与媒体"
+        }
+      }
+    },
+    "labels": {
+      "editing": {
+        "title": {
+          "en": "Editing",
+          "zh": "剪辑"
+        }
+      },
+      "subtitle": {
+        "title": {
+          "en": "Subtitle",
+          "zh": "字幕"
+        }
+      }
+    },
+    "sortKeys": {}
+  },
+  "plugins": [
+    {
+      "name": "dsh-laocai-editing",
+      "title": {
+        "en": "Laocai Editing",
+        "zh": "老财剪辑"
+      },
+      "description": {
+        "en": "Laocai's local video-editing and subtitle skills: host talk-style short-video finishing, dialogue short-film editing, material-to-storyboard briefing, plus the third-party tencent-mps cloud media-processing skill — shipped as a bundled skill provider.",
+        "zh": "老财（老财科技观察）本地剪辑与字幕技能包：主播口播成片、剧情对白短片剪辑、素材到分镜梳理，以及第三方腾讯云 MPS 云端媒体处理技能，以随包 skill 提供方形式交付。"
+      },
+      "icon": "https://raw.githubusercontent.com/kelaocai/dsh-laocai-editing/main/icon.svg",
+      "author": "kelaocai",
+      "homepage": "https://github.com/kelaocai/dsh-laocai-editing#readme",
+      "repository": {
+        "url": "https://github.com/kelaocai/dsh-laocai-editing"
+      },
+      "metadata": {
+        "category": "media",
+        "keywords": [
+          "video",
+          "editing",
+          "subtitle",
+          "clip",
+          "剪辑",
+          "字幕",
+          "老财"
+        ],
+        "labels": [
+          "editing",
+          "subtitle"
+        ],
+        "sortKeys": {}
+      },
+      "versions": [
+        {
+          "version": "0.1.0",
+          "publishTimestamp": 1794313821,
+          "source": {
+            "type": "npm"
+          }
+        }
+      ]
+    }
+  ]
+}
